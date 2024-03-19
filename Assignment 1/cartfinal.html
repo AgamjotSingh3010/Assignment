@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #080808;
+    text-decoration: solid;
+    font-size: 50px;
+    margin-bottom: 20px;
+}
+
+.product {
+    text-align: center;
+    display: inline-block;
+    border: 1px solid #ddd;;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    margin-right: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.product:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.product img {
+    width: 200px; ;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.product-info {
+    text-align: center;
+    font-size: 30px;
+}
+
+.product button {
+    font-size: 20px;
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #ff9f00;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.product button:hover {
+    background-color: #ffac33;
+}
+
+.cart {
+    text-align: right;
+    margin-top: 20px;
+    border-top: 2px solid #ff9f00;
+    padding-top: 20px;
+}
+
+.cart h2 {
+    font-size:40px;
+    color: #0b0b0b;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.cart ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.cart li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart li button {
+    padding: 8px 15px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.cart li button:hover {
+    background-color: #c82333;
+}
+
+.total {
+    color: #333;
+    text-align: right;
+    margin-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <center><H1>SHOP🛍️</H1></center><hr>
+        <div id="products" class="products">
+        </div>
+        <div class="cart">
+            <h2>MY CART</h2><hr>
+            <ul id="cart-items">
+            </ul>
+            <div class="total">Total: $<span id="totalAmount">0</span></div>
+        </div></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productsContainer = document.getElementById('products');
+            const cartItems = document.getElementById('cart-items');
+            const totalAmountElement = document.getElementById('totalAmount');
+            let totalAmount = 0;
+            const cartMap = new Map(); // To store cart items
+
+            const products = [
+                { id: 1, name: 'SHIRT', image: 'SHIRT.png', price: 35},
+                { id: 2, name: 'SHOES', image: 'SHOES.png', price: 150  },
+                { id: 3, name: 'WATCH', image: 'WATCH.png', price: 250 },
+                { id: 4,name: 'T-SHIRT', image: 'T-SHIRT.png', price: 20} 
+            ];
+
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.classList.add('product');
+                productDiv.setAttribute('data-id', product.id);
+                productDiv.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <div class="product-info">
+                        <span>${product.name}</span><br>
+                        <span class="price">$${product.price}</span>
+                    </div>
+                    <button class="add-to-cart">Add to Cart</button><br>
+                `;
+                productsContainer.appendChild(productDiv);
+            });
+
+            const addToCartButtons = document.querySelectorAll('.add-to-cart');
+            addToCartButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const productDiv = button.parentElement;
+                    const productId = productDiv.getAttribute('data-id');
+                    const productName = productDiv.querySelector('.product-info span:first-child').textContent;
+                    const price = parseFloat(productDiv.querySelector('.price').textContent.replace('$', ''));
+
+                    if (cartMap.has(productId)) {
+                        // If the product is already in the cart, increment its quantity and update the UI
+                        const cartItem = cartMap.get(productId);
+                        cartItem.quantity++;
+                        cartItem.element.querySelector('.quantity').textContent = cartItem.quantity;
+                    } else {
+                        // If the product is not in the cart, add it to the cart and update the UI
+                        const cartItem = document.createElement('li');
+                        cartItem.innerHTML = `
+                            <span>${productName} - $${price} <span class="quantity">1</span>x</span>
+                            <button class="remove-from-cart" data-id="${productId}">Remove</button>
+                        `;
+                        cartItems.appendChild(cartItem);
+                        cartMap.set(productId, { name: productName, price: price, quantity: 1, element: cartItem });
+                    }
+
+                    // Update total amount
+                    totalAmount += price;
+                    totalAmountElement.textContent = totalAmount.toFixed(2);
+                });
+            });
+
+            cartItems.addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-from-cart')) {
+                    const productId = event.target.getAttribute('data-id');
+                    const cartItem = cartMap.get(productId);
+                    const price = cartItem.price;
+                    const quantity = cartItem.quantity;
+                    
+                    if (quantity > 1) {
+                        // If the product quantity is more than 1, decrement its quantity and update the UI
+                        cartItem.quantity--;
+                        cartItem.element.querySelector('.quantity').textContent = cartItem.quantity;
+                    } else {
+                        // If the product quantity is 1, remove it from the cart and update the UI
+                        cartItems.removeChild(cartItem.element);
+                        cartMap.delete(productId);
+                    }
+
+                    // Update total amount
+                    totalAmount -= price;
+                    totalAmountElement.textContent = totalAmount.toFixed(2);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
